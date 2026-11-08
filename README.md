@@ -1,28 +1,34 @@
-# TripVault
+# TripVault Supabase connection and database setup
 
-TripVault is a travel-planning and journey-journal frontend built with React, Vite, TypeScript, and Tailwind CSS. The Supabase SQL schema is in `supabase/schema.sql`.
+The app now includes Supabase email/password sign-in, account registration and reset-link flow, plus database-backed trip creation/listing/completion and expense CRUD. Data access is enforced by PostgreSQL RLS policies.
 
-## Connect a Supabase project
+## Required account setup
 
-A Supabase project must be created in your Supabase account; this repository cannot create a project or access your account credentials. To connect it:
+A Supabase project and its credentials are account-specific. Add these values in Vercel → Project → Settings → Environment Variables (Production, Preview, and Development as needed), then redeploy:
 
-1. Create a project at https://supabase.com/dashboard and wait for its database to finish provisioning.
-2. In **SQL Editor**, run the contents of `supabase/schema.sql`. This creates the normalized tables, Auth profile trigger, indexes, and row-level security policies. Do not run it against a database containing tables you need without first reviewing the migration.
-3. In **Project Settings → API**, copy the Project URL and the public anon/publishable key (never the `service_role` key).
-4. Add these values to Vercel **Project → Settings → Environment Variables** and redeploy:
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_ANON_KEY`
-5. For local development, copy `.env.example` to `.env` and set the same values.
+- `VITE_SUPABASE_URL` — your project URL
+- `VITE_SUPABASE_ANON_KEY` — the publishable key (`sb_publishable_...`) or legacy anon public key
 
-The schema is prepared, but the current frontend still uses sample/local-storage trip state and placeholder login. Applying the schema and setting the variables alone does **not** make the current trip UI or login persist to Supabase; Supabase Auth and CRUD wiring must be implemented next. Never place the `service_role` key in a `VITE_` variable or browser code.
+These are public frontend configuration values. Never provide or use the service-role/secret key in the browser.
 
-## Local setup
+For local development, copy `.env.example` to `.env` and replace the placeholders.
 
-1. Install Node.js 20 or later.
-2. Run `npm install`.
-3. Run `npm run dev`.
-4. Run `npm run build` to create a production build.
+## Create the database schema
 
-## Deployment
+In the Supabase project, open **SQL Editor**, paste and run `supabase/schema.sql`. It creates the normalized TripVault tables, indexes, profile-on-signup trigger, and RLS policies. Review the SQL first if your project already contains data. Then enable email/password in Supabase Authentication settings and configure the allowed redirect URLs for your deployed Vercel domain.
 
-Connect this repository to Vercel with `main` as the production branch. Confirm the deployment source commit is current; redeploying an older deployment uses its old source revision.
+## What the app currently persists
+
+- Supabase Auth: registration, sign-in, sign-out, and password reset email.
+- `trips`: list, create, complete and reopen trips.
+- `expenses`: list and create expenses for a selected trip.
+
+Other workspace modules (places, itinerary, media, memories, uploads and exports) still require their respective UI persistence wiring. Media storage buckets/policies are not created by this schema. The app does not import demo/sample trip data into your account.
+
+## Local commands
+
+```sh
+npm install
+npm run dev
+npm run build
+```
